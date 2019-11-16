@@ -857,31 +857,16 @@ uint32_t pof_NtoH_transfer_flow_entry(void *ptr){
 
     return POF_OK;
 }
-static uint32_t bucket(void *ptr){
-	uint32_t i;
-    pof_bucket *p = (pof_bucket*)ptr;
-	POF_NTOHS_FUNC(p->action_number);
-	POF_NTOHS_FUNC(p->weight);
-	POF_NTOHL_FUNC(p->watch_group);
-	POF_NTOHS_FUNC(p->watch_slotID);
-
-	for(i=0;i<POF_MAX_ACTION_NUMBER_PER_BUCKET;i++)
-        action((pof_action *)p->action+i);
-
-    return POF_OK;
-}
 
 uint32_t pof_NtoH_transfer_group(void *ptr){
     pof_group *p = (pof_group *)ptr;
-
     int i;
 
     POF_NTOHL_FUNC(p->group_id);
     POF_NTOHL_FUNC(p->counter_id);
     POF_NTOHS_FUNC(p->slotID);
-
-	for(i=0;i<POF_MAX_BUCKET_NUMBER_PER_GROUP;i++)
-        bucket((pof_bucket *)p->bucket+i);
+    for(i=0;i<POF_MAX_ACTION_NUMBER_PER_GROUP;i++)
+        action((pof_action *)p->action+i);
 
     return POF_OK;
 }

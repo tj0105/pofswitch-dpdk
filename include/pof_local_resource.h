@@ -54,11 +54,6 @@
 /* Max instruction block number. */
 #define POFLR_INS_BLOCK_NUM     (64)
 
-//add by wenjian
-//date 2015/12/02
-/* Max queues per port*/
-#define PORT_MAX_QUEUES (8)
-
 #define PORT_NAME_LEN   POF_NAME_MAX_LENGTH
 #define TABLE_NAME_LEN  POF_NAME_MAX_LENGTH
 
@@ -131,14 +126,13 @@ struct tableInfo{
 
 struct groupInfo{
     uint8_t type;
-    uint8_t bucket_number;
+    uint8_t action_number;
     uint32_t id;
     struct hnode idNode;
 
     uint32_t counter_id;
-    pof_bucket bucket[POF_MAX_ACTION_NUMBER_PER_GROUP];
+    pof_action action[POF_MAX_ACTION_NUMBER_PER_GROUP];
 };
-
 
 struct meterInfo{
     uint32_t rate;
@@ -170,12 +164,6 @@ struct portInfo {
     uint16_t    slotID;
     uint8_t     of_enable;
     task_t      taskID;
-
-    //add by wenjian 2015/12/02
-    int queue_fd[PORT_MAX_QUEUES+1];
-    uint16_t num_queues;
-
-    uint32_t config;
 };
 
 enum portFlag {

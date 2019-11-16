@@ -75,9 +75,6 @@ typedef struct pofsc_dev_conn_desc{
 
     /* Last echo reply time. */
     time_t last_echo_time;
-
-    //add by wenjian 2015/12/02
-    uint8_t local_port_index;
 }  pofsc_dev_conn_desc;
 
 /* Define Soft Switch control module state. */
@@ -92,14 +89,6 @@ typedef enum{
     POFCS_CHANNEL_RUN           = 7,
     POFCS_STATE_MAX             = 8,
 } pof_channel_state;
-
-/* Define Group Type. by Qinkun */
-typedef enum{
-	GROUP_ALL		= 0,
-	GROUP_SELECT	= 1,
-	GROUP_INDIRECT	= 2,
-	GROUP_FF		= 3,
-}pof_group_type;
 
 /* Description of device connection. */
 extern volatile pofsc_dev_conn_desc pofsc_conn_desc;

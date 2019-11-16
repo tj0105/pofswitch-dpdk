@@ -31,7 +31,6 @@
 #include "../include/pof_local_resource.h"
 
 static void action(const void *ph);
-static void bucket(const void *ph);
 static void poflp_flow_entry_simple(const void *ph);
 static void instruction(const void *ph);
 
@@ -180,14 +179,13 @@ cmdPrintMatch(const pof_match *p)
 void
 cmdPrintGroup(const struct groupInfo *group)
 {
-    uint32_t i,j;
-	pof_bucket *pt = group->bucket;
+    uint32_t j;
     POF_COMMAND_PRINT(1,PINK,"[group %d] ", group->id);
 
     POF_COMMAND_PRINT(1,CYAN,"type=");
     POF_COMMAND_PRINT(1,WHITE,"%u ", group->type);
-    POF_COMMAND_PRINT(1,CYAN,"bucket_number=");
-    POF_COMMAND_PRINT(1,WHITE,"%u ", group->bucket_number);
+    POF_COMMAND_PRINT(1,CYAN,"action_number=");
+    POF_COMMAND_PRINT(1,WHITE,"%u ", group->action_number);
     POF_COMMAND_PRINT(1,CYAN,"group_id=");
     POF_COMMAND_PRINT(1,WHITE,"%u ", group->id);
     POF_COMMAND_PRINT(1,CYAN,"counter_id=");
@@ -196,11 +194,8 @@ cmdPrintGroup(const struct groupInfo *group)
 	uint8_t enableTmp = g_log.dbgEnable;
 	g_log.dbgEnable = g_log.cmdEnable;
 
-    for(i=0; i<group->bucket_number; i++){
-
-		POF_DEBUG_CPRINT(1,PINK,"bucket[");
-    	POF_DEBUG_CPRINT(1,PINK,"%u]: ",i+1);
-		bucket(&group->bucket[i]);
+    for(j=0; j<group->action_number; j++){
+        action(&group->action[j]);
     }
     g_log.dbgEnable = enableTmp;
 
@@ -1261,30 +1256,9 @@ static void meter(const unsigned char *ph){
     POF_DEBUG_CPRINT(1,WHITE,"%u ",p.meter_id);
 }
 
-static void bucket(const void *ph){
-	uint32_t i;
-	pof_bucket p = *((pof_bucket *)ph);
-
-	POF_DEBUG_CPRINT(1,CYAN,"action_bumber=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.action_number);
-    POF_DEBUG_CPRINT(1,CYAN,"weight=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.weight);
-    POF_DEBUG_CPRINT(1,CYAN,"watch_slotID=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.watch_slotID);
-    POF_DEBUG_CPRINT(1,CYAN,"watch_port=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.watch_port);
-    POF_DEBUG_CPRINT(1,CYAN,"watch_group=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.watch_group);
-
-	for(i=0; i<p.action_number; i++){
-        action(&p.action[i]);
-    }
-
-}
 static void group(const unsigned char *ph){
     pof_group p = *((pof_group *)ph);
-
-    uint32_t i,j;
+    uint32_t i;
 
     pof_NtoH_transfer_group(&p);
 
@@ -1294,18 +1268,15 @@ static void group(const unsigned char *ph){
     POF_DEBUG_CPRINT(1,WHITE,"%u ",p.slotID);
     POF_DEBUG_CPRINT(1,CYAN,"type=");
     POF_DEBUG_CPRINT(1,WHITE,"%u ",p.type);
-    POF_DEBUG_CPRINT(1,CYAN,"bucket_number=");
-    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.bucket_number);
+    POF_DEBUG_CPRINT(1,CYAN,"action_number=");
+    POF_DEBUG_CPRINT(1,WHITE,"%u ",p.action_number);
     POF_DEBUG_CPRINT(1,CYAN,"group_id=");
     POF_DEBUG_CPRINT(1,WHITE,"%u ",p.group_id);
     POF_DEBUG_CPRINT(1,CYAN,"counter_id=");
     POF_DEBUG_CPRINT(1,WHITE,"%u ",p.counter_id);
 
-    for(i=0; i<p.bucket_number; i++){
-
-		POF_DEBUG_CPRINT(1,PINK,"bucket[");
-    	POF_DEBUG_CPRINT(1,PINK,"%u]: ",i+1);
-		bucket(&p.bucket[i]);
+    for(i=0; i<p.action_number; i++){
+        action(&p.action[i]);
     }
 }
 

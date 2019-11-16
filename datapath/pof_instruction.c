@@ -613,7 +613,7 @@ static uint32_t execute_GOTO_TABLE(POFDP_ARG)
     ret = poflr_table_ID_to_id(p->next_table_id, table_type, table_id, lr);
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-//    POF_DEBUG_CPRINT_FL(1,BLUE,"Go to table[%d][%d]!", *table_type, *table_id);
+    POF_DEBUG_CPRINT_FL(1,BLUE,"Go to table[%d][%d]!", *table_type, *table_id);
 
     if(!(table = poflr_get_table_with_ID(p->next_table_id, lr))){
         POF_ERROR_HANDLE_RETURN_UPWARD(POFET_BAD_ACTION, POFBIC_BAD_TABLE_ID, g_upward_xid++);
@@ -628,7 +628,7 @@ static uint32_t execute_GOTO_TABLE(POFDP_ARG)
 
         dpp->packet_done = TRUE;
     }else{
-//        POF_DEBUG_CPRINT_FL(1,GREEN,"Match entry[%u]", dpp->flow_entry->index);
+        POF_DEBUG_CPRINT_FL(1,GREEN,"Match entry[%u]", dpp->flow_entry->index);
         /* Match. Increace the counter value. */
 #ifdef POF_SD2N
         ret = poflr_counter_increace(dpp->flow_entry->counter_id, POF_PACKET_REL_LEN_GET(dpp), lr);
@@ -661,7 +661,7 @@ static uint32_t execute_GOTO_TABLE(POFDP_ARG)
 #endif // POF_SHT_VXLAN
 		dpp->ins_done_num = 0;
     }
-//    dpp->packet_done = TRUE;
+
     return ret;
 }
 

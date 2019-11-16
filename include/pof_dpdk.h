@@ -52,7 +52,7 @@ static uint32_t dpdk_recv_raw_task(void *arg_lr);
 
 uint32_t dpdk_init(int argc, char *argv[]);
 
-#define MAX_PORT_NAME 9
+#define MAX_PORT_NAME 8
 struct dpdk_port_info{
 	uint8_t port_id;
 	char port_name[MAX_PORT_NAME];

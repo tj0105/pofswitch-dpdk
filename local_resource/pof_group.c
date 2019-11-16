@@ -74,11 +74,11 @@ static void
 groupFill(const struct pof_group *pofGroup, struct groupInfo *group)
 {
     group->type = pofGroup->type;
-    group->bucket_number = pofGroup->bucket_number;
+    group->action_number = pofGroup->action_number;
     group->id = pofGroup->group_id;
     group->counter_id = pofGroup->counter_id;
-    memcpy(group->bucket, pofGroup->bucket, \
-            group->bucket_number * sizeof(struct pof_bucket));
+    memcpy(group->action, pofGroup->action, \
+            group->action_number * sizeof(struct pof_action));
     group->idNode.hash = map_groupHashByID(group->id);
 }
 
@@ -232,9 +232,9 @@ reply(const struct groupInfo * group, const struct pof_local_resource *lr)
     pofGroup.slotID = lr->slotID;
     pofGroup.group_id = group->id;
     pofGroup.type = group->type;
-    pofGroup.bucket_number = group->bucket_number;
+    pofGroup.action_number = group->action_number;
     pofGroup.counter_id = group->counter_id;
-    memcpy(pofGroup.bucket, group->bucket, POF_MAX_BUCKET_NUMBER_PER_GROUP * sizeof(struct pof_bucket));
+    memcpy(pofGroup.action, group->action, POF_MAX_ACTION_NUMBER_PER_GROUP * sizeof(struct pof_action));
     pof_NtoH_transfer_group(&pofGroup);
 
     if(POF_OK != pofec_reply_msg(POFT_GROUP_MOD, g_recv_xid, sizeof(pof_group), (uint8_t *)&pofGroup)){

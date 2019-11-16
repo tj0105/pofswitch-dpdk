@@ -75,10 +75,9 @@ static hash_t map_portHashByName(const char *name) {
 }
 
 static void map_portInsert(struct portInfo *port, struct pof_local_resource *lr) {
-
+if(POF_OK == checkDPDKPortNameInSys(port->name)){
 	hmap_nodeInsert(lr->portPofIndexMap, &port->pofIndexNode);
 	hmap_nodeInsert(lr->portNameMap, &port->nameNode);
-if(POF_OK == checkDPDKPortNameInSys(port->name)){
 	lr->portNum++;
 }
 }

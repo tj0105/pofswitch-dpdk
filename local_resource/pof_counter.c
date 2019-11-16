@@ -101,7 +101,7 @@ poflr_counter_init(uint32_t counter_id, struct pof_local_resource *lr)
         map_counterInsert(counter, lr);
     }
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"The counter[%u] has been initialized!", counter_id);
+    POF_DEBUG_CPRINT_FL(1,GREEN,"The counter[%u] has been initialized!", counter_id);
     return POF_OK;
 }
 
@@ -292,11 +292,11 @@ poflr_counter_increace(uint32_t counter_id, struct pof_local_resource *lr)
 #endif // POF_SD2N
 
 #ifdef POF_SD2N
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"The counter %d has increased, value = %" \
+    POF_DEBUG_CPRINT_FL(1,GREEN,"The counter %d has increased, value = %" \
             POF_PRINT_FORMAT_U64", byte_value = %"POF_PRINT_FORMAT_U64, \
             counter_id, counter->value, counter->byte_value);
 #else // POF_SD2N
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"The counter %d has increased, value = %"POF_PRINT_FORMAT_U64, \
+    POF_DEBUG_CPRINT_FL(1,GREEN,"The counter %d has increased, value = %"POF_PRINT_FORMAT_U64, \
             counter_id, counter->value);
 #endif // POF_SD2N
     return POF_OK;

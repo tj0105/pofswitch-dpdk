@@ -86,6 +86,7 @@
 /* The bit number of one compare result field in metadata. */
 #define POF_COMP_RES_FIELD_BITNUM     (2)
 
+
 /* Packet infomation including data, length, received port. */
 struct pofdp_packet{
     struct pof_datapath *dp;
@@ -112,7 +113,7 @@ struct pofdp_packet{
 								/* The output metadata length and offset. 
 								 * Packet data output right behind the metadata. */
 	uint16_t output_whole_len;  /* = output_packet_len + output_metadata_len. */
-	uint8_t buf_out[POFDP_PACKET_RAW_MAX_LEN];	/* The memery which store the whole output data.
+	uint8_t buf_out[POFDP_PACKET_RAW_MAX_LEN];	/* The memery which store the whole output data. 
                                                  * Including the metadata and
                                                  * the packet.*/
     uint8_t *output_packet_buf;      /* Points to the first byte of packet to output. */
@@ -160,62 +161,6 @@ struct pofdp_packet{
 	/* Socket. */
 	int sockSend;
 };
-
-
-
-
-
-/**
- * Reset the fields of a pofdp_packet to their default values.
- *
- * The given dpp must have only one segment. ???//sqy
- *
- * @param dpp
- *   The pofdp_packet to be resetted.
- */
-static inline void pofdp_packet_reset(struct pofdp_packet *dpp)
-{
-
-
-	dpp->act_num=0;
-	dpp->ins_done_num=0;
-	dpp->ins_todo_num=0;
-//	dpp->left_len=0;
-	dpp->metadata_len=0;
-	dpp->offset=0;
-//	dpp->ori_len=0;
-	dpp->output_packet_len=0;
-	dpp->output_metadata_len=0;
-	dpp->output_whole_len=0;
-	dpp->output_metadata_offset=0;
-	dpp->output_packet_offset=0;
-	dpp->output_port_id=0;
-	dpp->output_slot_id=0;
-	dpp->packet_done=0;
-	dpp->rate=0;
-	dpp->sockSend=0;
-	dpp->table_id=0;
-	dpp->table_type=0;
-
-//	m->next = NULL;
-//	m->pkt_len = 0;
-//	m->tx_offload = 0;
-//	m->vlan_tci = 0;
-//	m->vlan_tci_outer = 0;
-//	m->nb_segs = 1;
-//	m->port = 0xff;
-//
-//	m->ol_flags = 0;
-//	m->packet_type = 0;
-//	m->data_off = (RTE_PKTMBUF_HEADROOM <= m->buf_len) ?
-//			RTE_PKTMBUF_HEADROOM : m->buf_len;
-//
-//	m->data_len = 0;
-//	__rte_mbuf_sanity_check(m, 1);
-}
-
-
-
 
 /* Define Metadata structure. */
 struct pofdp_metadata{
@@ -265,8 +210,6 @@ struct pof_datapath{
 
 	uint32_t pktCount;
 };
-
-
 
 extern struct pof_datapath g_dp;
 

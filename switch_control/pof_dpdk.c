@@ -41,16 +41,15 @@ static uint32_t init_packet_metadata(struct pofdp_packet *dpp,
 }
 
 static uint32_t pofdp_forward(POFDP_ARG, struct pof_instruction *first_ins) {
-	struct pofdp_metadata metadata[1] = { 0 };
-//	uint8_t metadata[POFDP_METADATA_MAX_LEN] = { 0 };
+	uint8_t metadata[POFDP_METADATA_MAX_LEN] = { 0 };
 	uint32_t ret;
 
-//	POF_DEBUG_CPRINT(1, BLUE, "\n");
-//	POF_DEBUG_CPRINT_FL(1, BLUE,
-//			"Receive a raw packet! len_B = %d, port id = %u", dpp->ori_len,
-//			dpp->ori_port_id);
-//	POF_DEBUG_CPRINT_FL_0X(1, GREEN, dpp->packetBuf, dpp->left_len,
-//			"Input packet data is ");
+	POF_DEBUG_CPRINT(1, BLUE, "\n");
+	POF_DEBUG_CPRINT_FL(1, BLUE,
+			"Receive a raw packet! len_B = %d, port id = %u", dpp->ori_len,
+			dpp->ori_port_id);
+	POF_DEBUG_CPRINT_FL_0X(1, GREEN, dpp->packetBuf, dpp->left_len,
+			"Input packet data is ");
 
 	/* Initialize the metadata. */
 	ret = init_packet_metadata(dpp, (struct pofdp_metadata *) metadata,
@@ -134,8 +133,8 @@ static uint32_t dpdk_send_raw(struct pofdp_packet *dpp,
 			tx_bufs[0]->pkt_len);
 
 
-//	POF_DEBUG_CPRINT_FL(1, GREEN, "mbuf buf_len = %u, data_len=%u, pkt_len=%u",
-//			tx_bufs[0]->buf_len, tx_bufs[0]->data_len, tx_bufs[0]->pkt_len);
+	POF_DEBUG_CPRINT_FL(1, GREEN, "mbuf buf_len = %u, data_len=%u, pkt_len=%u",
+			tx_bufs[0]->buf_len, tx_bufs[0]->data_len, tx_bufs[0]->pkt_len);
 
 	const uint16_t nb_tx = rte_eth_tx_burst(output_port_id, 0, tx_bufs, 1);
 
@@ -217,17 +216,17 @@ uint32_t dpdk_send_raw_task(struct pofdp_packet *dpp,
 			dpp->output_packet_buf + dpp->output_packet_offset,
 			dpp->output_packet_len);
 
-//	POF_DEBUG_CPRINT_FL(1, GREEN,
-//			"One packet is about to be sent out! port_id = %d, slot_id = %u, packet_len = %u, metadata_len = %u, total_len = %u",
-//			dpp->output_port_id, dpp->output_slot_id, dpp->output_packet_len,
-//			dpp->output_metadata_len, dpp->output_whole_len);
-//	POF_DEBUG_CPRINT_FL_0X(1, GREEN,
-//			dpp->output_packet_buf + dpp->output_packet_offset,
-//			dpp->output_packet_len, "The packet is ");
-//	POF_DEBUG_CPRINT_FL_0X(1, GREEN, dpp->buf_out, dpp->output_metadata_len,
-//			"The metatada is ");
-//	POF_DEBUG_CPRINT_FL_0X(1, BLUE, dpp->buf_out, dpp->output_whole_len,
-//			"The whole output packet is ");
+	POF_DEBUG_CPRINT_FL(1, GREEN,
+			"One packet is about to be sent out! port_id = %d, slot_id = %u, packet_len = %u, metadata_len = %u, total_len = %u",
+			dpp->output_port_id, dpp->output_slot_id, dpp->output_packet_len,
+			dpp->output_metadata_len, dpp->output_whole_len);
+	POF_DEBUG_CPRINT_FL_0X(1, GREEN,
+			dpp->output_packet_buf + dpp->output_packet_offset,
+			dpp->output_packet_len, "The packet is ");
+	POF_DEBUG_CPRINT_FL_0X(1, GREEN, dpp->buf_out, dpp->output_metadata_len,
+			"The metatada is ");
+	POF_DEBUG_CPRINT_FL_0X(1, BLUE, dpp->buf_out, dpp->output_whole_len,
+			"The whole output packet is ");
 
 	/* Check the packet lenght. */
 	if (dpp->output_whole_len > POF_MTU_LENGTH) {
@@ -299,8 +298,7 @@ static uint32_t dpdk_recv_raw_task(void *arg_lr) {
 			//pthread_testcancel();
 
 			/* Initialize the dpp. */
-//			memset(dpp, 0, sizeof *dpp);
-			pofdp_packet_reset(dpp);
+			memset(dpp, 0, sizeof *dpp);
 			dpp->packetBuf = &(dpp->buf[POFDP_PACKET_PREBUF_LEN]);
 
 			/* Get burst of RX packets, from first port of pair. */
@@ -320,12 +318,10 @@ static uint32_t dpdk_recv_raw_task(void *arg_lr) {
 					continue;
 				}
 
-//				memset(dpp->packetBuf, 0, len_B);
-//
-//				memcpy(dpp->packetBuf, bufs[pkg_i]->buf_addr + bufs[pkg_i]->data_off,
-//						len_B);
-				dpp->packetBuf= bufs[pkg_i]->buf_addr + bufs[pkg_i]->data_off;
+				memset(dpp->packetBuf, 0, len_B);
 
+				memcpy(dpp->packetBuf, bufs[pkg_i]->buf_addr + bufs[pkg_i]->data_off,
+						len_B);
 				rte_prefetch0(rte_pktmbuf_mtod(bufs[pkg_i], void *) );
 				rte_pktmbuf_free(bufs[pkg_i]);
 				/* Store packet data, length, received port infomation into the message queue. */
@@ -336,12 +332,12 @@ static uint32_t dpdk_recv_raw_task(void *arg_lr) {
 				dpp->buf_offset = dpp->packetBuf;
 				dpp->dp = dp;
 
-//				/* Check whether the first flow table exist. */
-//				if (!(poflr_get_table_with_ID(POFDP_FIRST_TABLE_ID, lr))) {
-//					POF_DEBUG_CPRINT_FL(1, RED,
-//							"Received a packet, but the first flow table does NOT exist.");
-//					continue;
-//				}
+				/* Check whether the first flow table exist. */
+				if (!(poflr_get_table_with_ID(POFDP_FIRST_TABLE_ID, lr))) {
+					POF_DEBUG_CPRINT_FL(1, RED,
+							"Received a packet, but the first flow table does NOT exist.");
+					continue;
+				}
 
 				/* Forward the packet. */
 
@@ -349,10 +345,9 @@ static uint32_t dpdk_recv_raw_task(void *arg_lr) {
 				POF_CHECK_RETVALUE_NO_RETURN_NO_UPWARD(ret);
 
 				dp->pktCount++;
-//				POF_DEBUG_CPRINT_FL(1, GREEN,
-//						"one packet_raw has been processed!\n");
+				POF_DEBUG_CPRINT_FL(1, GREEN,
+						"one packet_raw has been processed!\n");
 			}
-//			const uint16_t nb_tx = rte_eth_tx_burst(1, 0, bufs, 1);
 
 		}
 	}
@@ -369,7 +364,7 @@ uint32_t dpdk_init(int argc, char *argv[]) {
 	int ret = rte_eal_init(argc, argv);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "Error with EAL initialization\n");
-    printf("ret=%d\n",ret);
+
 	/* Check that there is an even number of ports to send/receive on. */
 	nb_ports = rte_eth_dev_count();
 	printf("the number of ports is %d\n", nb_ports);
@@ -444,7 +439,6 @@ uint32_t get_eth_name_by_hwaddr(const char *hwaddr, char name[]) {
 						printf("GET STRING ERROR!\n");
 				}
 			}
-//			printf("name=%s\n",name);
 //		}
 	}
 	fclose(fp);
@@ -512,10 +506,8 @@ uint32_t get_dpdk_port_info(struct dpdk_port_info dpdk_port[]) {
 		dpdk_port[port].port_name[1]='P';
 		dpdk_port[port].port_name[2]='D';
 		dpdk_port[port].port_name[3]='K';
-		for (i = 4; i < 4+strlen(name); i++,j++)
+		for (i = 4; i < MAX_PORT_NAME; i++,j++)
 			dpdk_port[port].port_name[i] = name[j];
-		for (i = 4+strlen(name); i < MAX_PORT_NAME; i++)
-					dpdk_port[port].port_name[i] = ' ';
 		dpdk_port[port].port_name[MAX_PORT_NAME] = '\0';
 		//char *ch = &name[0];
 		//strcpy(dpdk_port[port].port_name, ch);
@@ -532,18 +524,16 @@ uint32_t checkDPDKPortNameInSys(const char *name) {
 
 	struct dpdk_port_info dpdk_port[MAX_DPDK_PORT_NUM];
 	ret = get_dpdk_port_info(dpdk_port);
-  //  printf("nb_ports is %d\n",ret);
+
 	if (!name) {
 		return POF_ERROR;
-//        printf("111111\n");
 	}
 
 	for (port = 0; port < nb_ports; port++) {
 		port_info = &dpdk_port[port];
-	  //  printf("port info port %s, name %s\n", port_info->port_name, name);
+		//printf("port info port %s, name %s", port_info->port_name, name);
 		if (strcmp(port_info->port_name, name) == 0)
 			return POF_OK;
 	}
-//	printf("222222222\n");
 	return -1;
 }

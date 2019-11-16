@@ -9,14 +9,14 @@ sudo autoconf
 
 sudo automake
 
-export DPDK_BUILD=/home/sdn/test_Zhuming/dpdk-2.2.0/x86_64-native-linuxapp-gcc
+export DPDK_BUILD=$HOME/dpdk-2.2.0/x86_64-native-linuxapp-gcc
 
-#sudo ./configure --with-dpdk=$DPDK_BUILD LIBS=-ldl
-sudo ./configure CFLAGS="-g -O2 -march=native" --with-dpdk=$DPDK_BUILD LIBS=-ldl
+sudo ./configure --with-dpdk=$DPDK_BUILD LIBS=-ldl
+
 sudo make -j24
 
-#sudo make install
+sudo make install
 
-#sudo make clean
+sudo make clean
 
 echo "POFSwitch Success"

@@ -246,12 +246,9 @@ entryFill(const struct pof_flow_entry *pofEntry,    \
 static uint32_t
 entryInsert(const struct pof_flow_entry *pofEntry, struct tableInfo *table)
 {
-    uint32_t ret=POF_OK;
-    int xx=0;
-
-    hash_t hashbackup,maxhash;
+    uint32_t ret;
     /* Create entry node. */
-    struct entryInfo *entry,*entryall,*next;
+    struct entryInfo *entry;
 #ifdef POF_SHT_VXLAN
     uint16_t size;
     size = POF_BITNUM_TO_BYTENUM_CEIL(pofEntry->parameter_length);
@@ -260,6 +257,7 @@ entryInsert(const struct pof_flow_entry *pofEntry, struct tableInfo *table)
 #else // POF_SHT_VXLAN
     POF_MALLOC_SAFE_RETURN(entry, 1, POF_ERROR);
 #endif // POF_SHT_VXLAN
+
     /* Fill the entry's information. Including the hash value.
      * Assemble the value and mask of the entry. */
     if(entryFill(pofEntry, entry, table) != POF_OK){
@@ -267,57 +265,14 @@ entryInsert(const struct pof_flow_entry *pofEntry, struct tableInfo *table)
         FREE(entry);
         return POF_ERROR;
     }
-    /*sort the received flow entry by priority xyh*/
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"Starting value of entry's counter ID %d,hmap->n %d",entry->counter_id,table->entryMap->n);
-    if(table->type == POF_MM_TABLE){
-    if(table->entryNum==0){
-        hmap_nodeInsert(table->entryMap, &entry->node);
-        //POF_DEBUG_CPRINT_FL(1,GREEN,">>Startup counters task.step 5.insert the entry 1 entrynum =0");
-    }else{
-        HMAP_NODES_IN_STRUCT_TRAVERSE(entryall, next, node, table->entryMap){
-        if((entryall->priority < entry->priority)&&(xx==0)){
-            //POF_DEBUG_CPRINT_FL(1,GREEN,">>Startup counters task.step 5.insert the entry 1 entryall priority %d",\
-            		entryall->priority);
-            hashbackup=entry->node.hash;
-        	entry->node.hash=entryall->node.hash;
-            hmap_nodeInsert(table->entryMap, &entry->node);
-            //table->entryNum ++;
-            xx=1;
-        }
-        if (xx==1){
 
-        	hmap_nodeDelete(table->entryMap, &entryall->node);
-        	//POF_DEBUG_CPRINT_FL(1,GREEN,">>hmap->n %d,hamp->mask %d,entryall->node.hash %d",table->entryMap->n,table->entryMap->mask,entryall->node.hash);
-
-            entryall->node.hash = entryall->node.hash+1;
-            hmap_nodeInsert(table->entryMap, &entryall->node);
-           //POF_DEBUG_CPRINT_FL(1,GREEN,">>Adjust other entries,entryall->node.hash %d",entryall->node.hash);
-        }
-        if(&((entryall)->node) &&                                              \
-                (next = POF_STRUCT_FROM_MEMBER(next, node,                     \
-                    hmap_nodeNext(table->entryMap, &((entryall)->node)) ), 1)){
-        	maxhash=entryall->node.hash;
-        }
-
-    }
-        if (xx!=1){
-        	entry->node.hash=maxhash+1;
-        	hmap_nodeInsert(table->entryMap, &entry->node);
-        	//POF_DEBUG_CPRINT_FL(1,GREEN,">>Low priority table->entryNum+2 %d entry->node.hash %d priority %d hmap->n %d",\
-        			table->entryNum+2,entry->node.hash,entry->priority,table->entryMap->n);
-        }
-    	xx=0;
-    }
+    hmap_nodeInsert(table->entryMap, &entry->node);
     table->entryNum ++;
-}
 
-    if(table->type == POF_EM_TABLE){
-		hmap_nodeInsert(table->entryMap, &entry->node);
-		table->entryNum ++;
-    }
     if(table->type == POF_LPM_TABLE){
         lpmInsert(entry, table);
     }
+
     return POF_OK;
 }
 
@@ -456,32 +411,21 @@ maskMatch(const uint8_t *mask, const uint8_t *value, const uint8_t *key, uint16_
 static struct entryInfo *
 entryLookup_MM(const void *key, const struct tableInfo *table)
 {
-//    struct entryInfo *entry, *next, *ret = NULL;
-//
-//    /* Traverse all entries to lookup. */
-//    HMAP_NODES_IN_STRUCT_TRAVERSE(entry, next, node, table->entryMap){
-//        /* Match or not. */
-//        if(maskMatch(entry->mask, entry->value, (uint8_t *)key, table->keyLen)){
-//            if(!ret){
-//                /* First match. */
-//                ret = entry;
-//            }else{
-//                /* Multiple matches. Competition. */
-//                if(ret->priority < entry->priority){
-//                    ret = entry;
-//                }
-//            }
-//        }
-//    }
-//    return ret;
-	/******sort by priority xyh*******/
     struct entryInfo *entry, *next, *ret = NULL;
+
     /* Traverse all entries to lookup. */
     HMAP_NODES_IN_STRUCT_TRAVERSE(entry, next, node, table->entryMap){
         /* Match or not. */
         if(maskMatch(entry->mask, entry->value, (uint8_t *)key, table->keyLen)){
-        	ret=entry;
-        	break;
+            if(!ret){
+                /* First match. */
+                ret = entry;
+            }else{
+                /* Multiple matches. Competition. */
+                if(ret->priority < entry->priority){
+                    ret = entry;
+                }
+            }
         }
     }
     return ret;
@@ -539,10 +483,9 @@ struct entryInfo *
 poflr_entry_lookup(const uint8_t *packet, const uint8_t *metadata, const struct tableInfo *table)
 {
     struct entryInfo *entry;
-//    uint8_t *key;
-//    POF_MALLOC_SAFE_RETURN(key, POF_BITNUM_TO_BYTENUM_CEIL(table->keyLen), NULL);
+    uint8_t *key;
+    POF_MALLOC_SAFE_RETURN(key, POF_BITNUM_TO_BYTENUM_CEIL(table->keyLen), NULL);
 
-    uint8_t key[POF_MAX_FIELD_LENGTH_IN_BYTE] = {0};
     /* Assemble the find key. */
     keyAssemble(key, packet, metadata, table->match_field_num, table->match);
 
@@ -552,7 +495,7 @@ poflr_entry_lookup(const uint8_t *packet, const uint8_t *metadata, const struct 
     TABLE_TYPES
 #undef TABLE_TYPE
 
-//    FREE(key);
+    FREE(key);
     return entry;
 }
 

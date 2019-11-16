@@ -180,7 +180,7 @@ calChecksum(uint8_t *checksum_buf, uint8_t *cal_buf, \
 
     pofbf_cover_bit(checksum_buf, (uint8_t *)&checksum_value, cs_pos_b, cs_len_b);
 
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN,&checksum_value,8,"Calculate_checksum has been done! The checksum_value = ");
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN,&checksum_value,8,"Calculate_checksum has been done! The checksum_value = ");
 
     return POF_OK;
 }
@@ -215,7 +215,7 @@ static uint32_t execute_COUNTER(POFDP_ARG)
 #endif // POF_SD2N
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_counter has been done!");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_counter has been done!");
     action_update(dpp);
     return POF_OK;
 }
@@ -286,7 +286,7 @@ execute_ENCAP_VXLAN_HEADER(POFDP_ARG)
 
     POF_PACKET_REL_LEN_INC(dpp, sizeof(*header));
 
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
             "action_encap_vxlan_header has been DONE! The header is: ");
     action_update(dpp);
     return POF_OK;
@@ -312,7 +312,7 @@ execute_ENCAP_UDP_HEADER(POFDP_ARG)
 
     POF_PACKET_REL_LEN_INC(dpp, sizeof(*header));
 
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
             "action_encap_udp_header has been DONE! The header is: ");
     action_update(dpp);
     return POF_OK;
@@ -349,7 +349,7 @@ execute_ENCAP_IP_HEADER(POFDP_ARG)
 
     POF_PACKET_REL_LEN_INC(dpp, sizeof(*header));
 
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
             "action_encap_ip_header has been DONE! The header is: ");
     action_update(dpp);
     return POF_OK;
@@ -378,7 +378,7 @@ execute_ENCAP_MAC_HEADER(POFDP_ARG)
 
     POF_PACKET_REL_LEN_INC(dpp, sizeof(*header));
 
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN, header, sizeof(*header), \
             "action_encap_mac_header has been DONE! The header is: ");
     action_update(dpp);
     return POF_OK;
@@ -450,7 +450,7 @@ execute_CALCULATE_FIELD(POFDP_ARG)
 #define CALCULATION(NAME,VALUE) \
 		case POFCT_##NAME:											\
 			result=calculate_##NAME(value1,operand);				\
-			//POF_DEBUG_CPRINT_FL(1,GREEN,"calculate_type = "#NAME);  \
+			POF_DEBUG_CPRINT_FL(1,GREEN,"calculate_type = "#NAME);  \
 			break;
 
 		CALCULATIONS
@@ -463,7 +463,7 @@ execute_CALCULATE_FIELD(POFDP_ARG)
 	ret = pofdp_write_32value_to_field(result, &p->dst_field, dpp);
 	POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-	//POF_DEBUG_CPRINT_FL(1,GREEN,"action_calculate_field has been done! " \
+	POF_DEBUG_CPRINT_FL(1,GREEN,"action_calculate_field has been done! " \
 			"cal_type = %u, value = %u (0x%x), operand = %u (0x%x), result = %u (0x%x)", \
 			p->calc_type, value1, value1, operand, operand, result, result);
     action_update(dpp);
@@ -485,23 +485,16 @@ execute_CALCULATE_FIELD(POFDP_ARG)
  ***********************************************************************/
 static uint32_t execute_GROUP(POFDP_ARG)
 {
-	pof_action_group *p = (pof_action_group *)dpp->act->action_data;
+    pof_action_group *p = (pof_action_group *)dpp->act->action_data;
     struct groupInfo *group;
     uint32_t   group_id, ret;
-
-    /*****modify for group function*****/
-	pof_bucket *pt;
-	uint16_t i=0, j, max_weight, select_bucket=0;
-	struct portInfo *port, *next;
-	struct pofdp_packet *dpp_all[POF_MAX_BUCKET_NUMBER_PER_GROUP];
-	/*****modify for group function*****/
 
     group_id = p->group_id;
     if(!(group = poflr_get_group_with_ID(group_id, lr))){
         POF_ERROR_HANDLE_RETURN_UPWARD(POFET_GROUP_MOD_FAILED, POFGMFC_UNKNOWN_GROUP, g_upward_xid++);
     }
 
-    //POF_DEBUG_CPRINT_FL(1,BLUE,"Go to Group[%u]", group_id);
+    POF_DEBUG_CPRINT_FL(1,BLUE,"Go to Group[%u]", group_id);
 
 #ifdef POF_SD2N
     ret = poflr_counter_increace(group->counter_id, POF_PACKET_REL_LEN_GET(dpp), lr);
@@ -510,114 +503,14 @@ static uint32_t execute_GROUP(POFDP_ARG)
 #endif // POF_SD2N
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
+	dpp->act = group->action;
+	dpp->act_num = group->action_number;
 
-    /*****modify for group function*****/
-	pt = group->bucket;
-	switch(group->type){
-		case GROUP_ALL:
+    ret = pofdp_action_execute(dpp, lr);
+    POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-			if(group->bucket_number==1){
-				dpp->act = pt->action;
-				dpp->act_num = pt->action_number;
-				ret = pofdp_action_execute(dpp, lr);
-				POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
-			}
-			else if(group->bucket_number>1&&group->bucket_number<=POF_MAX_BUCKET_NUMBER_PER_GROUP){
-				 	for(i=0; i<group->bucket_number; ++i){
-						POF_MALLOC_SAFE_RETURN(dpp_all[i],1,NULL);
-				    	memcpy(dpp_all[i], dpp, sizeof(struct pofdp_packet));
-					}
-					for(i=0; i<group->bucket_number; ++i, ++pt){
-						dpp_all[i]->act = pt->action;
-						dpp_all[i]->act_num = pt->action_number;
-						ret = pofdp_action_execute(dpp_all[i], lr);
-						POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
-					}
-			}
-			else POF_DEBUG_CPRINT_FL(1,RED,"ALL Group has not been executed!");
-
-
-			//POF_DEBUG_CPRINT_FL(1,GREEN,"ALL Group has been executed!");
-
-			break;
-
-		case GROUP_INDIRECT:
-
-			dpp->act = pt->action;
-			dpp->act_num = pt->action_number;
-			ret = pofdp_action_execute(dpp, lr);
-			POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
-
-			//POF_DEBUG_CPRINT_FL(1,GREEN,"Indirect Group has been executed!");
-			break;
-
-		case GROUP_SELECT:
-
-			max_weight=pt->weight;
-			for(i=1; i<group->bucket_number; ++i, ++pt){
-				if(max_weight<pt->weight){
-					select_bucket=i;
-					max_weight=pt->weight;
-				}
-			}
-
-			--group->bucket[select_bucket].weight;
-			dpp->act = group->bucket[select_bucket].action;
-			dpp->act_num = group->bucket[select_bucket].action_number;
-			ret = pofdp_action_execute(dpp, lr);
-			POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
-
-			//POF_DEBUG_CPRINT_FL(1,GREEN,"Select Group has been executed!");
-			break;
-
-		case GROUP_FF:
-			j = group->bucket_number;
-			while(j){
-
-				HMAP_NODES_IN_STRUCT_TRAVERSE(port, next, pofIndexNode, lr->portPofIndexMap){
-					    if((pt->watch_port==port->pofIndex)&&(pt->watch_slotID==port->slotID)){
-							i=1;
-							break;}
-				}
-
-
-				if(port->pofState==POFPS_LIVE&&i==1){
-					dpp->act = pt->action;
-					dpp->act_num = pt->action_number;
-					ret = pofdp_action_execute(dpp, lr);
-					POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
-					//POF_DEBUG_CPRINT_FL(1,GREEN,"FF Group has been executed!");
-					break;
-				}
-
-				else {
-					++pt;
-					--j;
-				}
-
-			}
-
-			if(j==0){
-				POF_ERROR_CPRINT_FL(">>The port number is incorrect!");
-				terminate_handler();
-			}
-
-
-			break;
-
-		default:
-			POF_DEBUG_CPRINT_FL(1,GREEN,"The Switch does not support the kind of group");
-			POF_ERROR_HANDLE_RETURN_UPWARD(POFET_BAD_ACTION, POFBAC_BAD_TYPE, g_upward_xid++);
-			break;
-
-    }
-	/*****modify for group function*****/
-
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_group has been DONE!");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_group has been DONE!");
     return POF_OK;
-
-
-
 }
 
 /***********************************************************************
@@ -650,7 +543,7 @@ static uint32_t execute_PACKET_IN(POFDP_ARG)
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
     POF_DEBUG_CPRINT_FL(1,BLUE,"action_packet_in has been done! The packet in reason is %d.", reason);
-	//POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->packetBuf, dpp->offset + dpp->left_len, "The packet in data is ");
+	POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->packetBuf, dpp->offset + dpp->left_len, "The packet in data is ");
 
     action_update(dpp);
     return POF_OK;
@@ -731,8 +624,8 @@ static uint32_t execute_SET_FIELD(POFDP_ARG)
 #endif // POF_SHT_VXLAN
     pofbf_cover_bit(dst, value, offset_b, len_b);
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_set_field has been DONE");
-	//POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is ");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_set_field has been DONE");
+	POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is ");
 
     action_update(dpp);
     return POF_OK;
@@ -768,9 +661,9 @@ static uint32_t execute_SET_FIELD_FROM_METADATA(POFDP_ARG)
 
     pofbf_cover_bit(dpp->buf_offset, value, offset_b, len_b);
 
-	//POF_DEBUG_CPRINT_FL_0X(1,GREEN,value,POF_BITNUM_TO_BYTENUM_CEIL(len_b), \
+	POF_DEBUG_CPRINT_FL_0X(1,GREEN,value,POF_BITNUM_TO_BYTENUM_CEIL(len_b), \
 			"Set_field_from_metadata has been done! The metadata is :");
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is :");
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is :");
 
     action_update(dpp);
     return POF_OK;
@@ -798,8 +691,8 @@ static uint32_t execute_MODIFY_FIELD(POFDP_ARG)
 	ret = pofdp_write_32value_to_field(value, &p->field, dpp);
 	POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_modeify_field has been done! The increment is %d", p->increment);
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is ");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_modeify_field has been done! The increment is %d", p->increment);
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The packet is ");
 
     action_update(dpp);
     return POF_OK;
@@ -854,7 +747,7 @@ static uint32_t execute_CALCULATE_CHECKSUM(POFDP_ARG)
     ret = calChecksum(checksum_buf, cal_buf, cal_pos_b, cal_len_b, cs_pos_b, cs_len_b);
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_calculate_checksum has been done!");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_calculate_checksum has been done!");
 
     action_update(dpp);
     return POF_OK;
@@ -907,7 +800,7 @@ static uint32_t execute_OUTPUT(POFDP_ARG)
     dpp->output_packet_buf = dpp->buf_offset;
     /* Ouput packet from original pointer. */
 //    dpp->output_packet_len = dpp->left_len + dpp->offset - dpp->output_packet_offset;   /* Byte unit. */
-//    dpp->output_packet_buf = dpp->packetBuf;
+//    dpp->output_packet_buf = dpp->packetBuf; 
     dpp->output_metadata_len = POF_BITNUM_TO_BYTENUM_CEIL(p->metadata_len); /* Byte unit. */
     dpp->output_metadata_offset = p->metadata_offset;   /* Bit unit. */
     dpp->output_whole_len = dpp->output_packet_len + dpp->output_metadata_len;  /* Byte unit. */
@@ -930,7 +823,6 @@ static uint32_t execute_OUTPUT(POFDP_ARG)
     //POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
     action_update(dpp);
-//    dpp->act_num=0;
     return POF_OK;
 }
 
@@ -990,8 +882,8 @@ static uint32_t execute_ADD_FIELD(POFDP_ARG)
     ret = insertTagToPacket(tag_pos_b, tag_len_b, tag_value, dpp, lr);
     POF_CHECK_RETVALUE_RETURN_NO_UPWARD(ret);
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_add_field has been done!");
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The new packet = ");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_add_field has been done!");
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The new packet = ");
 
     action_update(dpp);
     return POF_OK;
@@ -1037,8 +929,8 @@ static uint32_t execute_DELETE_FIELD(POFDP_ARG)
         *(dpp->buf_offset + dpp->left_len - 1) &= POF_MOVE_BIT_LEFT(0xff, tag_len_b_x);
     }
 
-    //POF_DEBUG_CPRINT_FL(1,GREEN,"action_delete_field has been done!");
-    //POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The new packet = ");
+    POF_DEBUG_CPRINT_FL(1,GREEN,"action_delete_field has been done!");
+    POF_DEBUG_CPRINT_FL_0X(1,GREEN,dpp->buf_offset,dpp->left_len,"The new packet = ");
 
     action_update(dpp);
     return POF_OK;
