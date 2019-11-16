@@ -1,0 +1,117 @@
+cmake_minimum_required(VERSION 3.12)
+project(pofswitch_1_4_0_015_dpdk)
+
+set(CMAKE_CXX_STANDARD 14)
+
+
+include_directories(.)
+include_directories(autom4te.cache)
+include_directories(common)
+include_directories(datapath)
+include_directories(include)
+include_directories(local_resource)
+include_directories(switch_control)
+
+add_executable(pofswitch_1_4_0_015_dpdk
+        autom4te.cache/output.0
+        autom4te.cache/output.1
+        autom4te.cache/output.2
+        autom4te.cache/output.3
+        autom4te.cache/requests
+        autom4te.cache/traces.0
+        autom4te.cache/traces.1
+        autom4te.cache/traces.2
+        autom4te.cache/traces.3
+        common/automake.mk
+        common/pof_basefunc.c
+        common/pof_byte_transfer.c
+        common/pof_command.c
+        common/pof_hmap.c
+        common/pof_list.c
+        common/pof_log_print.c
+        common/pof_memory.c
+        common/pof_tree.c
+        datapath/automake.mk
+        datapath/pof_action.c
+        datapath/pof_datapath.c
+        datapath/pof_instruction.c
+        include/automake.mk
+        include/pof_byte_transfer.h
+        include/pof_command.h
+        include/pof_common.h
+        include/pof_conn.h
+        include/pof_datapath.h
+        include/pof_dpdk.h
+        include/pof_global.h
+        include/pof_hmap.h
+        include/pof_list.h
+        include/pof_local_resource.h
+        include/pof_log_print.h
+        include/pof_memory.h
+        include/pof_protocol_header.h
+        include/pof_switch_listen.h
+        include/pof_tree.h
+        include/pof_type.h
+        local_resource/automake.mk
+        local_resource/pof_counter.c
+        local_resource/pof_flow_table.c
+        local_resource/pof_group.c
+        local_resource/pof_ins_block.c
+        local_resource/pof_local_resource.c
+        local_resource/pof_meter.c
+        local_resource/pof_port.c
+        switch_control/automake.mk
+        switch_control/pof_config.c
+        switch_control/pof_dpdk.c
+        switch_control/pof_encap.c
+        switch_control/pof_parse.c
+        switch_control/pof_sctrl.c
+        switch_control/pof_switch.c
+        switch_control/pof_switch_listen.c
+        aclocal.m4
+        CMakeLists.txt
+        compile
+        config.log
+        config.status
+        configure
+        configure.in
+        depcomp
+        install-sh
+        Makefile
+        Makefile.am
+        Makefile.in
+        missing
+        NEWS
+        pof_action.o
+        pof_basefunc.o
+        pof_byte_transfer.o
+        pof_command.o
+        pof_config.o
+        pof_counter.o
+        pof_datapath.o
+        pof_dpdk.o
+        pof_encap.o
+        pof_flow_table.o
+        pof_group.o
+        pof_hmap.o
+        pof_ins_block.o
+        pof_instruction.o
+        pof_list.o
+        pof_local_resource.o
+        pof_log_print.o
+        pof_memory.o
+        pof_meter.o
+        pof_parse.o
+        pof_port.o
+        pof_sctrl.o
+        pof_switch.o
+        pof_switch_listen.o
+        pof_tree.o
+        pofsctrl
+        pofswitch
+        pofswitch-1.4.0.015-dpdk.iml
+        pofswitch-1.4.0.015.iml
+        pofswitch_config.conf
+        README
+        setup.sh
+        unsetup.sh)
